@@ -4,6 +4,7 @@ interface FromMarkdownOptions {
   newClassName?: string;
   wikiLinkClassName?: string;
   hrefTemplate?: (permalink: string) => string;
+  pageName?: string;
 }
 
 function fromMarkdown (opts: FromMarkdownOptions = {}) {
@@ -14,6 +15,7 @@ function fromMarkdown (opts: FromMarkdownOptions = {}) {
   const wikiLinkClassName = opts.wikiLinkClassName || 'internal'
   const defaultHrefTemplate = (permalink: string) => `#/page/${permalink}`
   const hrefTemplate = opts.hrefTemplate || defaultHrefTemplate
+  const selfName = opts.pageName ?? ''
   let node: any
 
   function enterWikiLink (this: any, token: any) {
@@ -49,7 +51,14 @@ function fromMarkdown (opts: FromMarkdownOptions = {}) {
     this.exit(token)
     const wikiLink = node
 
-    const pagePermalinks = pageResolver(wikiLink.value)
+    let pageName = wikiLink.value
+    let displayName = wikiLink.value
+    if (pageName.indexOf('#') !== -1 && pageName[0] === '#' && selfName.length > 0) {
+      pageName = selfName + pageName
+      displayName = pageName
+    }
+
+    const pagePermalinks = pageResolver(pageName)
     const target = pagePermalinks.find(p => permalinks.indexOf(p) !== -1)
     const exists = target !== undefined
 
@@ -60,7 +69,6 @@ function fromMarkdown (opts: FromMarkdownOptions = {}) {
       permalink = pagePermalinks[0] || ''
     }
 
-    let displayName = wikiLink.value
     if (wikiLink.data.alias) {
       displayName = wikiLink.data.alias
     }

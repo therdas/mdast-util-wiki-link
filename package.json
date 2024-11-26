@@ -57,7 +57,7 @@
     "mdast-util-from-markdown": "^2.0.0",
     "micromark": "^2.10.1",
     "micromark-extension-wiki-link": "^0.0.4",
-    "mocha": "^8.2.0",
+    "mocha": "^10.8.2",
     "rollup": "^2.32.0",
     "ts-jest": "^29.1.1",
     "ts-loader": "^9.4.4",

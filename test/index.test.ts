@@ -99,6 +99,67 @@ describe('mdast-util-wiki-link', () => {
       })
     })
 
+    test('parses a wiki link that has a section but no target', () => {
+      const ast = fromMarkdown('[[#Section A]]', {
+        extensions: [syntax()],
+        mdastExtensions: [
+          wikiLink.fromMarkdown({
+            permalinks: []
+          })
+        ]
+      })
+
+      visit(ast, 'wikiLink', (node: Node) => {
+        assertWikiLink(node)
+        assert.equal(node.data.hName, 'a')
+        assert.equal(node.data.hProperties.className, 'internal new')
+        assert.equal(node.data.hProperties.href, '#/page/#section_a')
+        assert.equal(node.data.hChildren[0].value, '#Section A')
+      })
+    })
+
+    test('parses a wiki link that has a section, no target, and the current page name is known', () => {
+      const ast = fromMarkdown('[[#Section A]]', {
+        extensions: [syntax()],
+        mdastExtensions: [
+          wikiLink.fromMarkdown({
+            pageName: 'Page A'
+          })
+        ]
+      })
+
+      visit(ast, 'wikiLink', (node: Node) => {
+        assertWikiLink(node)
+        assert.equal(node.data.exists, false)
+        assert.equal(node.data.hName, 'a')
+        assert.equal(node.data.hProperties.className, 'internal new')
+        assert.equal(node.data.hProperties.href, '#/page/page_a#section_a')
+        assert.equal(node.data.hChildren[0].value, 'Page A#Section A')
+      })
+    })
+
+    test('parses a wiki link that has a section', () => {
+      const ast = fromMarkdown('[[Page A#Section A]]', {
+        extensions: [syntax()],
+        mdastExtensions: [
+          wikiLink.fromMarkdown({
+            permalinks: ['page_a#section_a']
+          })
+        ]
+      })
+
+      visit(ast, 'wikiLink', (node: Node) => {
+        assertWikiLink(node)
+        assert.equal(node.data.exists, true)
+        assert.equal(node.data.permalink, 'page_a#section_a')
+        assert.equal(node.data.hName, 'a')
+        assert.equal(node.value, 'Page A#Section A')
+        assert.equal(node.data.hProperties.className, 'internal')
+        assert.equal(node.data.hProperties.href, '#/page/page_a#section_a')
+        assert.equal(node.data.hChildren[0].value, 'Page A#Section A')
+      })
+    })
+
     describe('configuration options', () => {
       test('uses pageResolver', () => {
         const identity = (name: string) => [name]
